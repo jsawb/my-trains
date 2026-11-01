@@ -1,52 +1,39 @@
-# My Trains — Shared V1 (recreated 1 November 2026)
+# My Trains V1.1 — update guide
 
-This is a recreation from the recovered conversation requirements, not the original lost ZIP. Source repository: https://github.com/jsawb/my-trains . Repository contents could not be retrieved in this session; no changes were pushed.
+This replaces the blank departure-service setting with a direct connection to Trainiac. No account, API key, paid service, or Cloudflare Worker is required for this personal app.
 
-## Start here
-1. Extract this ZIP. Upload its CONTENTS to jsawb/my-trains: index.html must be at the repository root. Keep the scriptable and server folders.
-2. In GitHub, Settings → Pages → Deploy from a branch → main → /(root) → Save. If using another default branch, select that branch instead.
-3. Open https://jsawb.github.io/my-trains/ after Pages finishes deploying. On each iPhone, open it in Safari → Share → Add to Home Screen.
-4. Open Settings in the app. Each phone chooses Kidderminster or Stourbridge Junction independently. Enable Wednesday journeys only on your phone; leave them off on your wife's phone. Defaults are Kidderminster and Wednesday off, as a deliberate first-run choice.
-5. The app opens without live data configured. Routes and preferences work; no invented departure times are displayed.
+## Update GitHub Pages
 
-## Routes and automatic selection
-- Morning: KID or SBJ → BSW (Birmingham Snow Hill).
-- Evening: BMO (Birmingham Moor Street) → KID or SBJ.
-- Personal Wednesday: KID → ROW (Rowley Regis), around 19:00; ROW → KID, around 21:00. Always Kidderminster regardless of commute preference.
-- Automatic uses Europe/London, including daylight saving: before noon morning, after noon evening. On Wednesdays with the personal toggle on, 17:00–19:59 selects outbound; from 20:00 selects return. Other days retain the commute selections (including weekends, for manual convenience).
-- Manual morning/evening always available; personal Wednesday options appear only when enabled. These are route presets, not reservations or confirmed scheduled trains. Live boards show upcoming departures now, not an all-day timetable or guaranteed 19:00/21:00 service.
+1. Download and extract My-Trains-V1.1.zip. Keep a backup of the repository first (GitHub Code → Download ZIP).
+2. Open https://github.com/jsawb/my-trains and select the main branch.
+3. Choose Add file → Upload files. Open the extracted package and drag its CONTENTS into GitHub, including all app files and icons. Do not upload the ZIP itself or a containing folder.
+4. Commit the files with the message “Connect My Trains V1.1 live departures”.
+5. Leave Settings → Pages on Deploy from a branch, main, / (root). No build command or API secret is needed.
+6. Wait for the Pages deployment to finish in Actions, then open https://jsawb.github.io/my-trains/ in Safari and reload. Close and reopen an existing Home Screen app if it still shows the old version. A further reload may be needed after the new service worker installs. Look for “V1.1” in the footer and no departure-service URL input. Avoid clearing website data unless necessary: that removes your saved preferences.
+7. Check that the board shows “Rail data as of” with a recent London timestamp and actual departure rows. Check Morning and Evening for your chosen home station. An empty board is possible; an error is not proof of a working live connection. If an error appears, retry after the stated wait and consult VERIFICATION.txt.
+8. On YOUR phone only, open Settings on this phone, enable Include my Wednesday journeys, and save. On the other phone leave this off. Each person chooses Kidderminster or Stourbridge Junction independently. Saved settings from V1 are retained under the existing storage key.
 
-## Connect real departures (separate setup)
-Feasible according to National Rail's official documentation, checked 1 November 2026:
-https://www.nationalrail.co.uk/developers/darwin-data-feeds/
-https://realtime.nationalrail.co.uk/LDBWS/docs/documentation.html
-https://realtime.nationalrail.co.uk/LDBWS/static/ldbws.json
+## Journeys
 
-Register and subscribe to the appropriate Darwin public JSON LDB product via Rail Data Marketplace. Confirm credentials, API base URL, terms, attribution requirements and applicable limits for YOUR subscription. The published OpenAPI has a localhost host value; it does not establish your production base URL. Do not copy that localhost address. The JSON API documentation describes Basic authentication; SOAP tokens are a different integration.
+- Morning: chosen home (Kidderminster / Stourbridge Junction) → Birmingham Snow Hill.
+- Evening: Birmingham Moor Street → chosen home.
+- Wednesday opt-in: Kidderminster → Rowley Regis, around 19:00; Rowley Regis → Kidderminster, around 21:00.
+- Automatic mode uses Europe/London, including summer time. Before noon it selects Morning; afterwards Evening. For Wednesday-enabled devices, from 17:00 it selects outbound, then return from 20:00. These are selection/reminder times, not promises that a train departs at exactly 19:00 or 21:00. The board shows the next departures today, not a future-date timetable. Wednesday can be selected manually for a preview of today's trains.
 
-GitHub Pages hosts static files and cannot hide an API credential. The included server/worker.mjs is a small Cloudflare Worker adapter based on the published JSON specification. Deploy it separately after obtaining access (Cloudflare account required; check current service pricing/limits). Its upstream URL and authentication are NOT tested against a subscribed service.
+## Live connection and errors
 
-From the server folder, with Wrangler installed and signed into Cloudflare:
-1. Set secret LDB_BASE_URL to your provider-confirmed HTTPS service base (including /LDBWS if applicable).
-2. Set secret LDB_AUTH to Base64(username:password), without the Basic prefix. Use wrangler secret put for each secret, entering values privately. Base64 does not protect a password; never commit it.
-3. Deploy with wrangler deploy. APP_ORIGIN is https://jsawb.github.io (origin, without /my-trains/).
-4. Verify GET https://YOUR-WORKER/?from=KID&to=BSW and each other route before relying on it. Confirm passing-through services are included by the subscribed API's destination filter; adjust the adapter if necessary.
-5. Put the Worker HTTPS URL in Settings on each device. Never put upstream credentials in the app or widget.
+https://api.traini.ac/v1/departures/{origin}?calling_at={destination}&limit=6
 
-The adapter permits only the six route pairs; it is publicly callable. Add provider-side rate limits/access controls appropriate to your usage. CORS is not authentication. App refreshes every 60 seconds while visible; widget timing is controlled by iOS. Errors and responses older than five minutes display unavailable, with no fabricated fallback. Offline app shell works after an initial online load; live data does not work offline and is not stored by the service worker.
+Trainiac documentation: https://traini.ac/developers
 
-## Scriptable widget
-1. Install Scriptable on each iPhone. Create a script named My Trains and paste scriptable/My Trains.js into it.
-2. Add a medium Scriptable widget to the Home Screen. Edit Widget → Script → My Trains.
-3. In the PWA, save your preferences and tap Copy widget settings. Paste the resulting JSON into the widget's Parameter field. The widget has no automatic access to Safari storage. Repeat this copy if preferences change.
-4. Example parameter (replace endpoint after deploying the adapter):
-   {"home":"KID","wednesday":true,"endpoint":"","appURL":"https://jsawb.github.io/my-trains/","mode":"auto"}
-   For your wife's widget use wednesday:false. Home may be KID or SBJ. Mode may be auto, morning, evening, out or back; out/back require Wednesday enabled.
-5. Run once in Scriptable to inspect. Tap widget to open the app. iOS decides refresh frequency; the script requests another refresh after ten minutes. No claim of minute-by-minute widget updates.
+Personal, non-commercial use is free without credentials. The documented budget is 120 units/minute per IP address; a departure request costs 3. The app polls once per minute while visible, spaces requests by at least 30 seconds, and waits after HTTP 429/503 using Retry-After. No custom User-Agent is sent by the PWA because browsers control that header. No credentials are embedded. The API receives the requested station pair and normal connection information; preferences stay in this browser's local storage. No accounts or cross-device settings sync.
 
-## Verification status
-JavaScript syntax, route selection (including Wednesday isolation and London daylight saving), adapter error/mapping behavior with mock responses, referenced shell files and ZIP integrity are checked locally. Mock data is used only in tests, never in the app.
-NOT verified: authenticated train feed, upstream production host/credentials, real station board results/platforms, provider filtering of intermediate calling points, GitHub deployment, installation on iPhone, or Scriptable runtime rendering. Finish these checks before relying on departures. No API credentials were available.
+The service is third-party and can change or withdraw access. Displayed timestamps identify response generation, not the age of every underlying prediction. Unknown estimates are never called “on time”; planned platforms are marked planned. Cancelled services, withheld platforms, replacement buses and delay reasons are displayed when supplied. Empty, stale, invalid, timeout and unavailable responses are distinct from successful departures. Offline mode keeps the app shell available but does not cache rail answers or display old trains as current. The shell cache is versioned for this update.
 
-## Download recovery
-The archive is my-trains-shared-v1.zip, with index.html at ZIP root. Save a local copy before uploading; do not upload the ZIP itself as the app. CHECKSUMS.sha256 lists the packaged source file hashes. VERIFICATION.txt records the recreation checks.
+## Optional Scriptable widget
+
+The replacement My Trains.js uses the same direct API and no endpoint setting. Replace the old script in Scriptable, use Copy widget settings in the app and paste that JSON as the widget parameter. Scriptable settings are independent of Safari settings. iOS decides widget refresh timing (the script requests 10 minutes); it is not a continuously live board. Scriptable on iPhone was not tested in this environment. Setting it up is optional; the PWA works independently.
+
+worker.mjs and wrangler.toml are retained legacy files and are not used by V1.1. Do not deploy them for this update. No GitHub Pages settings changes are required. CHECKSUMS.sha256 and VERIFICATION.txt describe this package, replacing the V1 reports.
+
+Data via Trainiac. © Network Rail Infrastructure Limited and Rail Delivery Group, under their open data licences. Check station screens before travelling.

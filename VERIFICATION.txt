@@ -1,4 +1,28 @@
-Recreated: 2026-11-01
-Local automated checks passed: 24
-Checks: module/widget syntax, route preferences, Wednesday isolation, London DST, stale response rejection, Worker allowlist/configuration/mapping/failure paths (MOCKED), manifest and HTML local references.
-No authenticated live API, browser/iPhone installation, Scriptable runtime or GitHub deployment tested.
+MY TRAINS V1.1 — VERIFICATION
+Date: 1 November 2026, Europe/London
+Source: public jsawb/my-trains repository, cloned and inspected before modification.
+
+REAL NETWORK TESTS PASSED
+At 09:14 London time all six station pairs returned HTTP 200 with type: ok and six departure rows each:
+KID → BSW (generated 09:14:04)
+SBJ → BSW (09:14:06)
+BMO → KID (09:14:07)
+BMO → SBJ (09:14:08)
+KID → ROW (09:14:10)
+ROW → KID (09:14:11)
+Each query used calling_at=destination. Returned calling points were checked for the requested station.
+Requests without credentials, with Origin: https://jsawb.github.io, received Access-Control-Allow-Origin: *.
+Observed response headers: RateLimit-Limit: 120, RateLimit-Policy: 120;w=60, X-Request-Units: 3; rate and Retry-After headers exposed to browsers.
+First captured KID departure: 09:46, forecast 09:46 from Darwin, platform 1, calling at Snow Hill 10:23 (1 November).
+Provider documentation inspected: https://traini.ac/developers — no key for personal use, 120 units/min/IP, 3 per departure query, 429/503 Retry-After handling.
+
+LOCAL CHECKS PASSED
+Node syntax checks for app.js, core.js, sw.js.
+Core tests: six route selections, Wednesday opt-in gating, Wednesday automatic 19:00/21:00 route selection, stale-response rejection, cancelled / delayed / unknown estimates.
+DOM integration tests with captured real network response: departure rows rendered, home/Wednesday settings saved and reloaded, independent storage defaults, empty-board message, 429 and offline errors with no train rows. No fake departure fallback added.
+ZIP extraction and per-file SHA256 checks verified after packaging.
+
+LIMITATIONS
+Headless Edge failed to start in the execution environment. No successful real-browser visual or browser-enforced CORS test, installed iPhone PWA test, service-worker upgrade lifecycle test, or Scriptable runtime test is claimed. CORS permission was verified in actual API response headers.
+Cancellation, stale, offline and 429 checks used controlled test cases, not observed live disruptions. Wednesday route calls tested today's Sunday departures, not a future Wednesday or a guaranteed 19:00/21:00 train.
+GitHub repository and published site have NOT been changed. Post-upload verification on the actual GitHub Pages origin is still required using README steps. Third-party uptime and underlying feed freshness are not guaranteed.
