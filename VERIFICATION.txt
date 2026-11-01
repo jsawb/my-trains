@@ -1,0 +1,4 @@
+Recreated: 2026-11-01
+Local automated checks passed: 24
+Checks: module/widget syntax, route preferences, Wednesday isolation, London DST, stale response rejection, Worker allowlist/configuration/mapping/failure paths (MOCKED), manifest and HTML local references.
+No authenticated live API, browser/iPhone installation, Scriptable runtime or GitHub deployment tested.

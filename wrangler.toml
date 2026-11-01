@@ -1,0 +1,7 @@
+name = "my-trains-departures"
+main = "worker.mjs"
+compatibility_date = "2026-10-01"
+[vars]
+APP_ORIGIN = "https://jsawb.github.io"
+# LDB_BASE_URL must be confirmed from your subscribed product, including /LDBWS if applicable.
+# Store LDB_BASE_URL and LDB_AUTH with wrangler secret put. Do not commit credentials.
